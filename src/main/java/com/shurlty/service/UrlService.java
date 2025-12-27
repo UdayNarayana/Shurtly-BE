@@ -1,7 +1,8 @@
 package com.shurlty.service;
 
 import com.shurlty.entity.UrlEntity;
-import com.shurlty.repository.ShurltyRepo;
+import com.shurlty.entity.UserEntity;
+import com.shurlty.repository.UrlRepo;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -20,42 +21,55 @@ public class UrlService {
             "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".toCharArray();
     private static final Set<String> ALLOWED_SCHEMES = Set.of("http", "https");
 
-    private final ShurltyRepo repo;
+    private final UrlRepo repo;
 
     @Value("${app.url.default-expiry-days:30}")
     private long defaultExpiryDays;
 
-    public UrlService(ShurltyRepo repo) {
+    public UrlService(UrlRepo repo) {
         this.repo = repo;
     }
 
     /** Creates a short URL record with a new 7-char code and default expiry. */
-    public UrlEntity createShortUrl(String rawLongUrl) {
+    public UrlEntity createShortUrl(String rawLongUrl, UserEntity owner, Integer expiresInDays) {
         String longUrl = canonicalizeAndValidate(rawLongUrl);
 
-        // Generate a unique code (retry on the rare collision)
-        String code = null;
+        long days;
+        if (expiresInDays == null) {
+            days = defaultExpiryDays; // default 30
+        } else {
+            if (expiresInDays < 1) throw new IllegalArgumentException("expiresInDays must be >= 1");
+            if (expiresInDays > 365) throw new IllegalArgumentException("expiresInDays must be <= 365");
+            days = expiresInDays;
+        }
+
+        Instant now = Instant.now();
+        Instant expiry = now.plus(Duration.ofDays(days));
+
+        String code;
         UrlEntity saved = null;
-        int attempts = 0;
-        while (attempts < 5) {
-            attempts++;
+
+        // retry on collision
+        for (int attempts = 0; attempts < 5; attempts++) {
             code = generateRandomCode();
             try {
                 UrlEntity entity = new UrlEntity();
+                entity.setOwner(owner);
                 entity.setCode(code);
                 entity.setLongUrl(longUrl);
-                entity.setCreatedAt(Instant.now());
-                entity.setExpiresAt(Instant.now().plus(Duration.ofDays(defaultExpiryDays)));
+                entity.setCreatedAt(now);
+                entity.setExpiresAt(expiry);
                 saved = repo.save(entity);
                 break;
             } catch (DataIntegrityViolationException dup) {
-                // code collision on UNIQUE constraint: try again with a new code
                 saved = null;
             }
         }
+
         if (saved == null) {
             throw new IllegalStateException("Failed to generate a unique short code. Please try again.");
         }
+
         return saved;
     }
 

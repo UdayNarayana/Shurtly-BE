@@ -20,6 +20,10 @@ public class UrlEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_id", nullable = false)
+    private UserEntity owner;
+
     @Column(nullable = false, unique = true, length = 16)
     private String code;  // 7-character short code
 
