@@ -11,6 +11,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/auth")
+@CrossOrigin("*")
 public class AuthController {
 
     private final UserService userService;
@@ -23,7 +24,7 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody Map<String, String> body) {
-        UserEntity u = userService.register(body.get("email"), body.get("password"));
+        UserEntity u = userService.register(body.get("name"), body.get("email"), body.get("password"));
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(Map.of("message", "User registered", "userId", u.getId()));

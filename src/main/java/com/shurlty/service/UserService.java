@@ -18,10 +18,16 @@ public class UserService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public UserEntity register(String emailRaw, String passwordRaw) {
+    public UserEntity register(String name, String emailRaw, String passwordRaw) {
         String email = normalizeEmail(emailRaw);
         String password = passwordRaw == null ? "" : passwordRaw.trim();
 
+        if (name.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Name cannot be empty");
+        }
+        if (name.length() > 80) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Name should be less than 80 characters");
+        }
         if (email.isBlank() || password.isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email and password are required");
         }
@@ -33,6 +39,7 @@ public class UserService {
         }
 
         UserEntity u = new UserEntity();
+        u.setName(name);
         u.setEmail(email);
         u.setPasswordHash(passwordEncoder.encode(password));
         return userRepo.save(u);
