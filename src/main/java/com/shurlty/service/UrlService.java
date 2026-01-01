@@ -22,12 +22,14 @@ public class UrlService {
     private static final Set<String> ALLOWED_SCHEMES = Set.of("http", "https");
 
     private final UrlRepo repo;
+    private final CodeGenerator codeGenerator;
 
     @Value("${app.url.default-expiry-days:30}")
     private long defaultExpiryDays;
 
-    public UrlService(UrlRepo repo) {
+    public UrlService(UrlRepo repo, CodeGenerator codeGenerator) {
         this.repo = repo;
+        this.codeGenerator = codeGenerator;
     }
 
     /** Creates a short URL record with a new 7-char code and default expiry. */
@@ -51,7 +53,7 @@ public class UrlService {
 
         // retry on collision
         for (int attempts = 0; attempts < 5; attempts++) {
-            code = generateRandomCode();
+            code = codeGenerator.nextCode(); //redis global counter
             try {
                 UrlEntity entity = new UrlEntity();
                 entity.setOwner(owner);

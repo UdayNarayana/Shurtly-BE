@@ -24,7 +24,7 @@ public class UrlEntity {
     @JoinColumn(name = "user_id", nullable = false)
     private UserEntity owner;
 
-    @Column(nullable = false, unique = true, length = 16)
+    @Column(nullable = false, unique = true, length = 7)
     private String code;  // 7-character short code
 
     @Column(name = "long_url", nullable = false, columnDefinition = "TEXT")
