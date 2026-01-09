@@ -35,6 +35,7 @@ public class SecurityConfig {
                         // public redirect
                         .requestMatchers(HttpMethod.GET, "/").permitAll()
                         .requestMatchers(HttpMethod.GET, "/*").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/{code}").permitAll()
 
                         // public auth
                         .requestMatchers("/api/v1/auth/**").permitAll()

@@ -67,7 +67,6 @@ public class UrlController {
 
         return ResponseEntity.ok(list.stream().map(e -> Map.of(
                 "code", e.getCode(),
-                "shortUrl", e.getCode(),          // FE can prefix base domain if you want
                 "longUrl", e.getLongUrl(),
                 "createdAt", e.getCreatedAt().toString(),
                 "expiresAt", e.getExpiresAt().toString()
