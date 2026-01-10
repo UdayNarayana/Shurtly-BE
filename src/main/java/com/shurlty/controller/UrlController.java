@@ -87,6 +87,18 @@ public class UrlController {
                 .orElse(ResponseEntity.status(404).body(Map.of("error", "Not found")));
     }
 
+    @DeleteMapping("/links/{code}")
+    public ResponseEntity<?> delete(@PathVariable String code) {
+        UserEntity me = currentUser();
+        try {
+            service.deleteLink(code, me);
+            return ResponseEntity.noContent().build(); // 204
+        } catch (UrlService.NotFoundException e) {
+            return ResponseEntity.status(404).body(Map.of("error", "Not found"));
+        }
+    }
+
+
     // ---- helpers ----
 
     private static String buildBaseUrl(HttpServletRequest req) {

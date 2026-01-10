@@ -23,4 +23,6 @@ public interface UrlRepo extends JpaRepository<UrlEntity, Long> {
 
     // For future cleanup job
     long deleteAllByExpiresAtBefore(Instant cutoff);
+
+    void deleteByCodeAndOwner(String code, UserEntity owner);
 }

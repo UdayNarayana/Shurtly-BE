@@ -86,6 +86,13 @@ public class UrlService {
         return e.getLongUrl();
     }
 
+    public void deleteLink(String code, UserEntity owner) {
+        UrlEntity entity = repo.findByCodeAndOwner(code, owner)
+                .orElseThrow(() -> new NotFoundException());
+
+        repo.delete(entity);
+    }
+
     // ===== Helpers =====
 
     private String generateRandomCode() {
@@ -119,6 +126,6 @@ public class UrlService {
     }
 
     // Typed exceptions so the controller can map to 404/410.
-    public static class NotFoundException extends Exception {}
-    public static class ExpiredException extends Exception {}
+    public static class NotFoundException extends RuntimeException {}
+    public static class ExpiredException extends RuntimeException {}
 }
